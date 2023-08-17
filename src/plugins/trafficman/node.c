@@ -81,9 +81,9 @@ trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi)
 
 	if ((*wp)->cursize + 1 > 10)
         ep->action = TRAFFICMAN_NEXT_DROP;
-    else
+    else {
         ep->action = TRAFFICMAN_NEXT_CONTINUE;
-
+    }
 
 	(*wp)->cursize++;
 
@@ -205,8 +205,6 @@ trafficman_inline (vlib_main_t * vm,
       next[0] = 0;
 
       counter = trafficman_handle_buffer(&wp, from[0]);
-      if counter == 0:
-          next[3] = TRAFFICMAN_NEXT_DROP;
 
       if (is_trace)
 	{
