@@ -72,17 +72,18 @@ typedef enum
 } trafficman_next_t;
 
 always_inline int
-trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi, u32 * action)
+trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi)
 {
 	// Count packets
 	int i = 0;
 	
 	trafficman_wheel_entry_t *ep = clib_mem_vm_alloc(sizeof (trafficman_wheel_entry_t));
 
-	if ((*wp)->cursize + 1 > 10) {
-		printf("queue size %d\n", (*wp)->cursize);
-		return i;
-	}
+	if ((*wp)->cursize + 1 > 10)
+        ep->action = TRAFFICMAN_NEXT_DROP;
+    else
+        ep->action = TRAFFICMAN_NEXT_CONTINUE;
+
 
 	(*wp)->cursize++;
 
@@ -96,7 +97,7 @@ trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi, u32 * action)
 }
 
 always_inline u32
-trafficman_return_buffer(trafficman_wheel_t ** wp)
+trafficman_return_buffer(trafficman_wheel_t ** wp, u32 * bi, u32 * action)
 {
 	if ((*wp)->cursize == 0)
 		return 0;
@@ -110,7 +111,7 @@ trafficman_return_buffer(trafficman_wheel_t ** wp)
 
 	(*wp)->cursize--;
 
- 	return ep->buffer_index;
+ 	return 0;
 }
 
 always_inline uword
@@ -125,6 +126,7 @@ trafficman_inline (vlib_main_t * vm,
   trafficman_wheel_t *wp = nsm->wheel_by_thread[vm->thread_index];
   int counter = 0;
   u32 output[VLIB_FRAME_SIZE];
+  u32 action;
 
   from = vlib_frame_vector_args (frame);
   n_left_from = frame->n_vectors;
@@ -154,10 +156,10 @@ trafficman_inline (vlib_main_t * vm,
       next[2] = 0;
       next[3] = 0;
 
-      counter += trafficman_handle_buffer(&wp, from[0], &next[0]);
-      counter += trafficman_handle_buffer(&wp, from[1], &next[1]);
-      counter += trafficman_handle_buffer(&wp, from[2], &next[2]);
-      counter += trafficman_handle_buffer(&wp, from[3], &next[3]);
+      counter = trafficman_handle_buffer(&wp, from[0]);
+      counter = trafficman_handle_buffer(&wp, from[1]);
+      counter += trafficman_handle_buffer(&wp, from[2]);
+      counter += trafficman_handle_buffer(&wp, from[3]);
 
       if (is_trace)
 	{
@@ -202,7 +204,9 @@ trafficman_inline (vlib_main_t * vm,
      /* $$$$ process 1 pkt right here */
       next[0] = 0;
 
-      counter += trafficman_handle_buffer(&wp, from[0]);
+      counter = trafficman_handle_buffer(&wp, from[0]);
+      if counter == 0:
+          next[3] = TRAFFICMAN_NEXT_DROP;
 
       if (is_trace)
 	{
@@ -224,8 +228,12 @@ trafficman_inline (vlib_main_t * vm,
   u32 count;
   for (u32 i = 0; i < frame->n_vectors; i++)
   {
-  	u32 index = trafficman_return_buffer(&wp);
+    u32 index, action;
+  	trafficman_return_buffer(&wp, &index, &action);
+
 	output[i] = index;
+    nexts[i] = action;
+
 	count = i;
   }
 

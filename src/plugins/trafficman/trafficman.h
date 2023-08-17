@@ -34,6 +34,7 @@ typedef struct trafficman_wheel_entry_t
     u32 output_next_index;
 
     u32 buffer_index;
+    u32 action;
     
     struct trafficman_wheel_entry_t *next;
 
