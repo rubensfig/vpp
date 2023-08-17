@@ -107,12 +107,14 @@ trafficman_return_buffer(trafficman_wheel_t ** wp, u32 * bi, u32 * action)
 
 	trafficman_wheel_entry_t *ep = (*wp)->head;
     
-    bi = ep->buffer_index;
-    action = ep->action;
+    *bi = ep->buffer_index;
+    *action = ep->action;
 
 	(*wp)->head = ep->next;
 
 	(*wp)->cursize--;
+
+    clib_mem_vm_free(ep, sizeof(trafficman_wheel_entry_t));
 
  	return 0;
 }
@@ -225,7 +227,7 @@ trafficman_inline (vlib_main_t * vm,
       n_left_from -= 1;
     }
 
-  u32 count;
+  u32 count, dequeued;
   for (u32 i = 0; i < frame->n_vectors; i++)
   {
     u32 index, action;
