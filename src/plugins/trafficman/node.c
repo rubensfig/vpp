@@ -126,7 +126,6 @@ trafficman_inline (vlib_main_t * vm,
   trafficman_wheel_t *wp = nsm->wheel_by_thread[vm->thread_index];
   int counter = 0;
   u32 output[VLIB_FRAME_SIZE];
-  u32 action;
 
   from = vlib_frame_vector_args (frame);
   n_left_from = frame->n_vectors;
@@ -156,8 +155,8 @@ trafficman_inline (vlib_main_t * vm,
       next[2] = 0;
       next[3] = 0;
 
-      counter = trafficman_handle_buffer(&wp, from[0]);
-      counter = trafficman_handle_buffer(&wp, from[1]);
+      counter += trafficman_handle_buffer(&wp, from[0]);
+      counter += trafficman_handle_buffer(&wp, from[1]);
       counter += trafficman_handle_buffer(&wp, from[2]);
       counter += trafficman_handle_buffer(&wp, from[3]);
 
