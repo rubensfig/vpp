@@ -227,7 +227,7 @@ trafficman_inline (vlib_main_t * vm,
       n_left_from -= 1;
     }
 
-  u32 count, dequeued;
+  u32 count;
   for (u32 i = 0; i < frame->n_vectors; i++)
   {
     u32 index, action;
