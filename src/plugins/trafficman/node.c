@@ -106,6 +106,9 @@ trafficman_return_buffer(trafficman_wheel_t ** wp, u32 * bi, u32 * action)
 		return 0;
 
 	trafficman_wheel_entry_t *ep = (*wp)->head;
+    
+    bi = (*wp)->buffer_index;
+    action = (*wp)->action;
 
 	(*wp)->head = ep->next;
 
