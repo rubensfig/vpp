@@ -72,7 +72,7 @@ typedef enum
 } trafficman_next_t;
 
 always_inline int
-trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi)
+trafficman_handle_buffer(trafficman_wheel_t ** wp, u32 bi, u32 * action)
 {
 	// Count packets
 	int i = 0;
@@ -154,10 +154,10 @@ trafficman_inline (vlib_main_t * vm,
       next[2] = 0;
       next[3] = 0;
 
-      counter += trafficman_handle_buffer(&wp, from[0]);
-      counter += trafficman_handle_buffer(&wp, from[1]);
-      counter += trafficman_handle_buffer(&wp, from[2]);
-      counter += trafficman_handle_buffer(&wp, from[3]);
+      counter += trafficman_handle_buffer(&wp, from[0], &next[0]);
+      counter += trafficman_handle_buffer(&wp, from[1], &next[1]);
+      counter += trafficman_handle_buffer(&wp, from[2], &next[2]);
+      counter += trafficman_handle_buffer(&wp, from[3], &next[3]);
 
       if (is_trace)
 	{
